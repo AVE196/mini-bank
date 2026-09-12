@@ -13,10 +13,12 @@ public class UserService {
     private int lastIndex = 0;
 
     public User createUser(String login) {
+        if (login.isEmpty()) throw new IllegalArgumentException("Логин не может быть пустым");
         if (userRepository.values().stream().anyMatch(u -> u.getLogin().equals(login)))
             throw new IllegalArgumentException(String.format("Пользователь с логином %s уже существует", login));
         User user = new User(login);
         user.setId(lastIndex++);
+        userRepository.put(user.getId(), user);
         return user;
     }
 

@@ -1,5 +1,7 @@
 package ru.ave.model;
 
+import java.util.Objects;
+
 public class Account {
 
     private int id;
@@ -32,5 +34,26 @@ public class Account {
 
     public void setMoneyAmount(int moneyAmount) {
         this.moneyAmount = moneyAmount;
+    }
+
+    @Override
+    public String toString() {
+        return "Account{" +
+                "id=" + id +
+                ", userId=" + userId +
+                ", moneyAmount=" + moneyAmount +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Account account = (Account) o;
+        return id == account.id && userId == account.userId && moneyAmount == account.moneyAmount;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, userId, moneyAmount);
     }
 }

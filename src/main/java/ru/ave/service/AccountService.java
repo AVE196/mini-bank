@@ -12,7 +12,7 @@ import java.util.NoSuchElementException;
 @Component
 public class AccountService {
 
-    private final Map<Integer, Account> accountRepository = new HashMap<>();;
+    private final Map<Integer, Account> accountRepository = new HashMap<>();
 
     private int lastIndex = 0;
 
@@ -43,19 +43,21 @@ public class AccountService {
         return account;
     }
 
-    public void transferAmount(int senderAccountId, int recipientAccountId, int amount) {
+    public int transferAmount(int senderAccountId, int recipientAccountId, int amount) {
         Account senderAccount = getAccount(senderAccountId);
         Account recipientAccount = getAccount(recipientAccountId);
         withdrawAmountByAccount(senderAccount, amount);
         if (senderAccount.getUserId() == recipientAccount.getUserId()) {
             depositAmountByAccount(recipientAccount, amount);
+            return -1;
         } else {
             depositAmountByAccount(recipientAccount, commissionAmount(amount));
+            return commissionAmount(amount);
         }
-        // ToDo return/logging transfer/commission
     }
 
-    public Account closeAccount(int id) {
+    public Account[] closeAccount(int id) {
+        // returned array {closed account, recipient account}
         Account closedAccount = getAccount(id);
         Account recipientAccount = accountRepository.values().stream()
                 .filter(a -> (a != closedAccount && a.getUserId() == closedAccount.getUserId()))
@@ -63,7 +65,7 @@ public class AccountService {
                 .orElseThrow(() -> new UnsupportedOperationException("Данный счет единственный у пользователя. Невозможно закрыть счет: " + id));
         depositAmountByAccount(recipientAccount, closedAccount.getMoneyAmount());
         accountRepository.remove(id);
-        return closedAccount;
+        return new Account[] {closedAccount, recipientAccount};
     }
 
     private void depositAmountByAccount(Account account, int amount) {
@@ -79,7 +81,7 @@ public class AccountService {
     }
 
     private int commissionAmount(int amount) {
-        return (int) (1 - properties.getTransferCommission()) * amount;
+        return (int) ((1 - properties.getTransferCommission()) * amount);
     }
 
     private Account getAccount(int id) {
