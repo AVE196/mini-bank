@@ -14,8 +14,8 @@ public class ConsoleListener {
 
     private final UserService userService;
     private final AccountService accountService;
-//    private final String menu = "Доступные команды: USER_CREATE, SHOW_ALL_USERS, ACCOUNT_CREATE,\n" +
-//            "ACCOUNT_DEPOSIT, ACCOUNT_WITHDRAW, ACCOUNT_TRANSFER, ACCOUNT_CLOSE, EXIT";
+    private final Scanner scanner;
+
     private final String menu = """
         Введите номер команды из меню. Доступные команды:\s
         1. USER_CREATE,\s
@@ -30,32 +30,32 @@ public class ConsoleListener {
     private final String error = "Некорректный ввод. ";
 
     @Autowired
-    public ConsoleListener(UserService userService, AccountService accountService) {
+    public ConsoleListener(UserService userService, AccountService accountService, Scanner scanner) {
         this.userService = userService;
         this.accountService = accountService;
+        this.scanner = scanner;
     }
 
     public void start() {
-        Scanner scanner = new Scanner(System.in);
         boolean isNotExit = true;
         while (isNotExit) {
             System.out.println(menu);
-            String choice = scanner.nextLine();
+            MenuPointsEnum pointMenu = MenuPointsEnum.fromNumber(getNotNegativeNumber(scanner.nextLine()));
             try {
-                switch (getNotNegativeNumber(choice)) {
-                    case 1:
+                switch (pointMenu) {
+                    case USER_CREATE:
                         // USER_CREATE
                         System.out.println("Введите логин:");
                         User user = userService.createUser(scanner.nextLine());
                         user.getAccountList().add(accountService.createAccount(user.getId()));
                         System.out.println("Добавлен новый пользователь: " + user);
                         break;
-                    case 2:
+                    case SHOW_ALL_USERS:
                         // SHOW_ALL_USERS
                         System.out.println("Список пользователей:");
                         System.out.println(userService.getUsers());
                         break;
-                    case 3:
+                    case ACCOUNT_CREATE:
                         // ACCOUNT_CREATE
                         System.out.println("Введите id пользователя для добавления нового счета:");
                         int userId = getNotNegativeNumber(scanner.nextLine());
@@ -65,7 +65,7 @@ public class ConsoleListener {
                         userService.getUsers().get(account.getUserId()).getAccountList().add(account);
                         System.out.println("Добавлен новый аккаунт: " + account);
                         break;
-                    case 4:
+                    case ACCOUNT_DEPOSIT:
                         // ACCOUNT_DEPOSIT
                         System.out.println("Введите id-номер счета: ");
                         int idDeposit = getNotNegativeNumber(scanner.nextLine());
@@ -74,7 +74,7 @@ public class ConsoleListener {
                         Account accountDeposit = accountService.depositAmount(idDeposit, amountDeposit);
                         System.out.println("Внесены средства на счет. Счет: " + accountDeposit);
                         break;
-                    case 5:
+                    case ACCOUNT_WITHDRAW:
                         // ACCOUNT_WITHDRAW
                         System.out.println("Введите id-номер счета: ");
                         int idWithdraw = getNotNegativeNumber(scanner.nextLine());
@@ -83,7 +83,7 @@ public class ConsoleListener {
                         Account accountWithdraw = accountService.withdrawAmount(idWithdraw, amountWithdraw);
                         System.out.println("списаны средства со счета. Счет: " + accountWithdraw);
                         break;
-                    case 6:
+                    case ACCOUNT_TRANSFER:
                         // ACCOUNT_TRANSFER
                         System.out.println("Введите id-номер счета отправителя: ");
                         int idSender = getNotNegativeNumber(scanner.nextLine());
@@ -99,7 +99,7 @@ public class ConsoleListener {
                                         String.format(", комиссия: %d, на счет получателя зачислено: %d",
                                                 amountTransfer - amountAfterCommission, amountAfterCommission )));
                         break;
-                    case 7:
+                    case ACCOUNT_CLOSE:
                         // ACCOUNT_CLOSE
                         System.out.println("Введите id-номер счета для закрытия: ");
                         int idClosed = getNotNegativeNumber(scanner.nextLine());
@@ -108,7 +108,7 @@ public class ConsoleListener {
                         System.out.printf("Аккаунт %d закрыт. Оставшийся баланс %d перенесен на счет %d%n",
                                 accountTransferring[0].getId(), accountTransferring[0].getMoneyAmount(), accountTransferring[1].getId());
                         break;
-                    case 0:
+                    case EXIT:
                         // EXIT
                         isNotExit = false;
                         break;
